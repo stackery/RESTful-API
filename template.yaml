@@ -1,2 +1,188 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
+Resources:
+  api3B3CD49E:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
+        - ResourceName: restfulAPI
+      StageName: !Ref EnvironmentAPIGatewayStageName
+      DefinitionBody:
+        openapi: '3.0'
+        info: {}
+        paths:
+          /users:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionADEABECD.Arn}/invocations
+              responses: {}
+          /users/{id}:
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${function9652E950.Arn}/invocations
+              responses: {}
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionEDCE4453.Arn}/invocations
+              responses: {}
+            delete:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${function383F9AE8.Arn}/invocations
+              responses: {}
+      EndpointConfiguration: REGIONAL
+    Metadata:
+      StackeryName: restfulAPI
+  functionEDCE4453:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-functionEDCE4453
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: newUser
+      CodeUri: src/functionEDCE4453
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref table6A219B36
+      Events:
+        api3B3CD49EPOSTusersid:
+          Type: Api
+          Properties:
+            Path: /users/{id}
+            Method: POST
+            RestApiId: !Ref api3B3CD49E
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table6A219B36
+          TABLE_ARN: !GetAtt table6A219B36.Arn
+    Metadata:
+      StackeryName: newUser
+  functionADEABECD:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-functionADEABECD
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: getUsers
+      CodeUri: src/functionADEABECD
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref table6A219B36
+      Events:
+        api3B3CD49EGETusers:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: GET
+            RestApiId: !Ref api3B3CD49E
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table6A219B36
+          TABLE_ARN: !GetAtt table6A219B36.Arn
+    Metadata:
+      StackeryName: getUsers
+  function9652E950:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-function9652E950
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: editUser
+      CodeUri: src/function9652E950
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref table6A219B36
+      Events:
+        api3B3CD49EPUTusersid:
+          Type: Api
+          Properties:
+            Path: /users/{id}
+            Method: PUT
+            RestApiId: !Ref api3B3CD49E
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table6A219B36
+          TABLE_ARN: !GetAtt table6A219B36.Arn
+    Metadata:
+      StackeryName: editUser
+  function383F9AE8:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-function383F9AE8
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: deleteUser
+      CodeUri: src/function383F9AE8
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref table6A219B36
+      Events:
+        api3B3CD49EDELETEusersid:
+          Type: Api
+          Properties:
+            Path: /users/{id}
+            Method: DELETE
+            RestApiId: !Ref api3B3CD49E
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table6A219B36
+          TABLE_ARN: !GetAtt table6A219B36.Arn
+    Metadata:
+      StackeryName: deleteUser
+  table6A219B36:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableName: !Sub ${AWS::StackName}-table6A219B36
+Parameters:
+  StackTagName:
+    Type: String
+    Description: Stack Name (injected by Stackery at deployment time)
+  EnvironmentTagName:
+    Type: String
+    Description: Environment Name (injected by Stackery at deployment time)
+  EnvironmentAPIGatewayStageName:
+    Type: String
+    Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)
