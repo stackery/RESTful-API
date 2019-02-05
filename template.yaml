@@ -153,7 +153,7 @@ Resources:
       Description: !Sub
         - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
         - ResourceName: deleteUser
-      CodeUri: src/deleteUser
+      CodeUri: src/function383F9AE8
       Handler: index.handler
       Runtime: nodejs8.10
       MemorySize: 3008
